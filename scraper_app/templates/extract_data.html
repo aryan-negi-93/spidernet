@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Data</title>
+    <link rel="stylesheet" href="../static/extract.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            /* background-color: #333; */
+            color: white;
+        }
+
+        .site-header img {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .site-header h1 a {
+            color:black;
+            text-decoration: none;
+        }
+
+        .site-navigation .nav {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-navigation .nav li {
+            margin-left: 15px;
+        }
+
+        .site-navigation .nav a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .main_container {
+            padding: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            /* height: 80vh; */
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .field-row label {
+            margin-right: 10px;
+        }
+
+        .field-row input,
+        .field-row select {
+            margin-right: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    outline: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .dataframe-container {
+            overflow-x: auto;
+            width: 700px;
+        }
+
+        table.dataframe {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table.dataframe th,
+        table.dataframe td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table.dataframe th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        table.dataframe tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table.dataframe tr:hover {
+            background-color: #ddd;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="site-identity">
+            <img src="../static/logo/spider-logo-red-black-spider-logo-df925cb0-aa83-472b-a922-87d9cea6bcec.jpg" alt="">
+            <h1><a href="#">SpiderNet</a></h1>
+        </div>
+        <nav class="site-navigation">
+            <ul class="nav">
+                <li><a href="#">About</a></li>
+                <li><a href="#">News</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="main_container">
+        <div class="container_cs3323">
+            <h1>Extract Data from Scraped HTML</h1>
+            <form method="POST" id="extractForm">
+                {% csrf_token %}
+                <div id="fieldsContainer">
+                    <!-- Dynamic fields will be added here -->
+                    <div class="field-row">
+                        <label for="tag">HTML Tag:</label>
+                        <select name="tag[]" id="tag" required>
+                            <option value="div">div</option>
+                            <option value="a">a</option>
+                            <option value="span">span</option>
+                            <option value="p">p</option>
+                            <option value="h1">h1</option>
+                            <option value="h2">h2</option>
+                            <option value="h3">h3</option>
+                            <option value="h4">h4</option>
+                            <option value="h5">h5</option>
+                            <option value="ol">ol</option>
+                            <option value="ul">ul</option>
+                            <option value="li">li</option>
+                            <option value="h6">h6</option>
+                            <option value="strong">strong</option>
+                        </select>
+                        <label for="className">Class Name:</label>
+                        <input type="text" name="class_name[]" id="className" placeholder="Enter class name">
+                        <button type="button" class="remove-field">Remove</button>
+                    </div>
+                </div>
+                <button type="button" id="addField">Add Another Field</button>
+                <button type="submit">Extract Data</button>
+            </form>
+        </div>
+
+        <div class="dataframe">
+            {% if extracted_data %}
+            <h2>Extracted Data:</h2>
+            <div class="dataframe-container">
+                {{ extracted_data|safe }}
+            </div>
+            <form action="{% url 'download_csv_file' %}" method="get">
+                <button type="submit">Download CSV File</button>
+            </form>
+            {% endif %}
+
+            {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addFieldButton = document.getElementById('addField');
+            const fieldsContainer = document.getElementById('fieldsContainer');
+
+            addFieldButton.addEventListener('click', function () {
+                const newRow = document.createElement('div');
+                newRow.classList.add('field-row');
+                newRow.innerHTML = `
+                    <label for="tag">HTML Tag:</label>
+                    <select name="tag[]" required>
+                        <option value="div">div</option>
+                        <option value="a">a</option>
+                        <option value="span">span</option>
+                        <option value="p">p</option>
+                        <option value="h1">h1</option>
+                        <option value="h2">h2</option>
+                        <option value="h3">h3</option>
+                        <option value="h4">h4</option>
+                        <option value="h5">h5</option>
+                        <option value="h6">h6</option>
+                        <option value="ol">ol</option>
+                        <option value="ul">ul</option>
+                        <option value="li">li</option>
+                        <option value="strong">strong</option>
+                    </select>
+                    <label for="className">Class Name:</label>
+                    <input type="text" name="class_name[]" placeholder="Enter class name">
+                    <button type="button" class="remove-field">Remove</button>
+                `;
+                fieldsContainer.appendChild(newRow);
+            });
+
+            fieldsContainer.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-field')) {
+                    e.target.parentElement.remove();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

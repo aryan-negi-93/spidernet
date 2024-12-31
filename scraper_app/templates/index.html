@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scraper App</title>
+  <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="site-identity">
+      <img src="../static/logo/spider-logo-red-black-spider-logo-df925cb0-aa83-472b-a922-87d9cea6bcec.jpg" alt="">
+      <h1><a href="#">SpiderNet</a></h1>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav">
+        <!-- <li><a href="#">About</a></li>
+        <li><a href="#">News</a></li>
+        <li><a href="#">Contact</a></li> -->
+      </ul>
+    </nav>
+  </header>
+
+
+  <div class="container_cs3323">
+    <h1>Start using Web Scraper now</h1>
+    <div class="form">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="link_div">
+          <input type="text" id="url" name="url" placeholder="https://example.com" required>
+        </div>
+        <button type="submit">Scrap</button>
+      </form>
+    </div>
+  </div>
+
+
+  <main>
+
+
+
+    <!-- Input form to submit the URL -->
+
+
+    <div class="pop_up_container" id="popUpContainer">
+      <span class="close_pop_up" id="closePopUp">X</span>
+      <div class="show_code">
+        {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+        {% elif html_content %}
+        <h2>Scraped HTML Content:</h2>
+        <p>The HTML has been saved to <strong>scraped_html.html</strong></p>
+        <pre>{{ html_content }}</pre>
+        {% endif %}
+      </div>
+      <div class="pop_up_btn">
+        <button><a href="{% url 'download_scraped_html' %}" class="download_button">Download</a></button>
+        <button><a href="{% url 'extract_data' %}" class="extract_button">Extract</a></button>
+      </div>
+
+    </div>
+
+
+
+    <div class="section-text__card">
+      <picture>
+        <source><img src="../static/logo/spider-logo-red-black-spider-logo-df925cb0-aa83-472b-a922-87d9cea6bcec.jpg"
+          alt="Instagram Videos and Photos Download" width="328" height="250">
+      </picture>
+      <div class="section-text__content">
+        <h2>Web Scraper - Free Web Scraping</h2>
+        <p>Web Scraper utilizes a modular structure that is made of selectors, which instruct the scraper on how to
+          traverse the target site and what data to extract. Thanks to this structure, data mining from modern and
+          dynamic websites such as Amazon, Tripadvisor, eBay, as well as from lesser-known sites is effortless.</p>
+      </div>
+    </div>
+
+
+
+  </main>
+
+
+  <script>
+    // JavaScript to handle pop-up display
+    document.addEventListener('DOMContentLoaded', function () {
+      const popUpContainer = document.getElementById('popUpContainer');
+      const closePopUp = document.getElementById('closePopUp');
+
+      // Show pop-up when <p> tag contains code
+      const showCode = document.querySelector('.show_code pre');
+      if (showCode) {
+        popUpContainer.style.display = 'block';
+      }
+
+      // Close pop-up when X is clicked
+      closePopUp.addEventListener('click', function () {
+        popUpContainer.style.display = 'none';
+      });
+    });
+  </script>
+
+</body>
+
+</html>
